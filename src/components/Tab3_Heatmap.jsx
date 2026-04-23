@@ -10,7 +10,7 @@
  * 데이터: monthly_full_transition.csv
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { C, LoadingState, ErrorState } from './shared';
 
 const CARD  = '#1E293B';
@@ -56,7 +56,12 @@ export default function Tab3_Heatmap({ transData, loading, error }) {
   }, [transData]);
 
   const [monthIdx, setMonthIdx] = useState(0);
-  // months가 업데이트되면 최신 월로 초기화
+  // 데이터 로드 완료 시 최신 월(마지막 인덱스)로 자동 이동
+  useEffect(() => {
+    if (months.length > 0) {
+      setMonthIdx(months.length - 1);
+    }
+  }, [months.length]);
   const selectedMonth = months[monthIdx] ?? null;
 
   // 선택된 월 → pivot matrix
