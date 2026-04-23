@@ -9,14 +9,16 @@
  * 금지 사항: /api/* 호출 없음, 하드코딩 배열 없음
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useState, useEffect, useMemo } from 'react';
 
 // ── Tab 컴포넌트 (각 파일이 준비된 순서대로 추가) ─────────────
-import Tab2_Composition  from './components/Tab2_Composition';
-import Tab3_Heatmap      from './components/Tab3_Heatmap';
-import Tab4_ChurnLoss    from './components/Tab4_ChurnLoss';
-import Tab5_RevenueQuality from './components/Tab5_RevenueQuality';
-import Tab6_CampaignKPI  from './components/Tab6_CampaignKPI';
+import { LoadingState } from './components/shared';
+
+const Tab2_Composition = lazy(() => import('./components/Tab2_Composition'));
+const Tab3_Heatmap = lazy(() => import('./components/Tab3_Heatmap'));
+const Tab4_ChurnLoss = lazy(() => import('./components/Tab4_ChurnLoss'));
+const Tab5_RevenueQuality = lazy(() => import('./components/Tab5_RevenueQuality'));
+const Tab6_CampaignKPI = lazy(() => import('./components/Tab6_CampaignKPI'));
 
 // ── 공통 스타일 상수 ──────────────────────────────────────────
 const BG   = '#0F172A';
@@ -130,14 +132,35 @@ const TABS = [
   { id: 'campaignkpi',    label: 'CampaignKPI'    },
 ];
 
+const TAB_COMPONENTS = {
+  composition: Tab2_Composition,
+  heatmap: Tab3_Heatmap,
+  churnloss: Tab4_ChurnLoss,
+  revenuequality: Tab5_RevenueQuality,
+  campaignkpi: Tab6_CampaignKPI,
+};
+
 // ── 메인 컴포넌트 ─────────────────────────────────────────────
 export default function RFMDashboard() {
   const [activeTab, setActiveTab] = useState('composition');
+  const ActiveTab = TAB_COMPONENTS[activeTab] ?? Tab2_Composition;
 
   // CSV 로드 (최상위에서 1회)
   const { data: kpiData,   loading: kpiL,   error: kpiE   } = useCSV('/data/monthly_segment_kpi.csv');
   const { data: transData, loading: transL, error: transE } = useCSV('/data/monthly_full_transition.csv');
   const { data: weeklyData,loading: weeklyL,error: weeklyE} = useCSV('/data/weekly_cohort_flow.csv');
+  const activeTabProps = {
+    composition: { kpiData, loading: kpiL, error: kpiE },
+    heatmap: { transData, loading: transL, error: transE },
+    churnloss: {
+      transData,
+      kpiData,
+      loading: transL || kpiL,
+      error: transE || kpiE,
+    },
+    revenuequality: { kpiData, loading: kpiL, error: kpiE },
+    campaignkpi: { transData, loading: transL, error: transE },
+  }[activeTab] ?? { kpiData, loading: kpiL, error: kpiE };
 
   const anyLoading = kpiL || transL || weeklyL;
   const anyError   = kpiE || transE || weeklyE;
@@ -319,24 +342,9 @@ export default function RFMDashboard() {
 
       {/* ════════════ Panel 2~6 탭 컨텐츠 ════════════ */}
       <div style={{ padding: '24px' }}>
-        {activeTab === 'composition' && (
-          <Tab2_Composition kpiData={kpiData} loading={kpiL} error={kpiE} />
-        )}
-        {activeTab === 'heatmap' && (
-          <Tab3_Heatmap transData={transData} loading={transL} error={transE} />
-        )}
-        {activeTab === 'churnloss' && (
-          <Tab4_ChurnLoss
-            transData={transData} kpiData={kpiData}
-            loading={transL || kpiL} error={transE || kpiE}
-          />
-        )}
-        {activeTab === 'revenuequality' && (
-          <Tab5_RevenueQuality kpiData={kpiData} loading={kpiL} error={kpiE} />
-        )}
-        {activeTab === 'campaignkpi' && (
-          <Tab6_CampaignKPI transData={transData} loading={transL} error={transE} />
-        )}
+        <Suspense fallback={<LoadingState />}>
+          <ActiveTab {...activeTabProps} />
+        </Suspense>
       </div>
     </div>
   );
