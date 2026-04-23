@@ -169,6 +169,8 @@ export default function RFMDashboard() {
     const dormantAlert = dormantPct >= 71.73 ? 'red' : null;
 
     // 3. 예상 이탈 손실액 (At_Risk → Dormant transition × At_Risk ARPPU)
+    // TO월 레이블로 통일: transData.snapshot_month = 도착월 = kpiData.snapshot_month
+    // → latestMonth 기준으로 두 CSV를 직접 매핑
     const atRiskToDormant = transData.find(
       r => r.snapshot_month === latestMonth && r.from_seg === 'At_Risk' && r.to_seg === 'Dormant'
     );
@@ -252,10 +254,16 @@ export default function RFMDashboard() {
         {/* KPI 카드 5개 */}
         <div style={{ display: 'flex', gap: 12 }}>
           <KpiCard
-            label="활성 고객 수 (Active Users)"
+            label="MAU (Monthly Active Users)"
             value={kpis ? kpis.activeUsers.toLocaleString() + '명' : '—'}
             sub={kpis?.prevActiveUsers
-              ? `전월 ${kpis.prevActiveUsers.toLocaleString()}명 → ${kpis.activeUsers < kpis.prevActiveUsers ? '▼' : '▲'} ${Math.abs(kpis.activeUsers - kpis.prevActiveUsers).toLocaleString()}`
+              ? (() => {
+                  const diff = kpis.activeUsers - kpis.prevActiveUsers;
+                  const pct  = ((diff / kpis.prevActiveUsers) * 100).toFixed(1);
+                  const arrow = diff < 0 ? '▼' : '▲';
+                  const sign  = diff < 0 ? '' : '+';
+                  return `MoM ${arrow}${Math.abs(diff).toLocaleString()}명 (${sign}${pct}%)`;
+                })()
               : undefined}
             alert={kpis?.activeAlert}
           />
