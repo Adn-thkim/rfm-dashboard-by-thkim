@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# 환경변수 (DB 자격증명 포함 — 절대 커밋 금지)
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
