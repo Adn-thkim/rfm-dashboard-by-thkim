@@ -28,10 +28,11 @@ const TEXT   = '#F1F5F9';
 const MUTED  = '#94A3B8';
 
 // ROI 시나리오 참조선
+// 낙관 12% 색상을 #10B981(C.Loyal)과 겹치지 않도록 하늘색으로 변경
 const ROI_SCENARIOS = [
   { rate: 8,  roi: 655, color: '#64748B', label: '보수 8% (ROI 655%)' },
   { rate: 10, roi: 694, color: '#F59E0B', label: '중립 10% (ROI 694%)' },
-  { rate: 12, roi: 723, color: '#10B981', label: '낙관 12% (ROI 723%)' },
+  { rate: 12, roi: 723, color: '#38BDF8', label: '낙관 12% (ROI 723%)' },
 ];
 
 function ProgressBar({ value, target, color }) {
@@ -122,6 +123,10 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
         <p style={{ margin: '4px 0 0', fontSize: 12, color: MUTED }}>
           3단계 At_Risk 이탈 방어 캠페인 — 실제 전이율 추이 및 ROI 시뮬레이션 비교
         </p>
+        <p style={{ margin: '6px 0 0', fontSize: 11, color: '#F59E0B' }}>
+          ※ 현재 수치는 캠페인 미실시 상태의 자연 전이율입니다.
+          캠페인 집행 시점부터 캠페인 대상 수치가 별도로 추가됩니다.
+        </p>
       </div>
 
       {/* KPI 카드 3개 */}
@@ -129,7 +134,7 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
         <KpiCard
           label="At_Risk → Loyal 복귀율 (최신 월)"
           value={latest?.returnRate != null ? `${latest.returnRate.toFixed(2)}%` : '—'}
-          sub={`기준: ${latest?.month || '—'}`}
+          sub={`캠페인 미대상 자연 전이율 · 캠페인 목표 10% 대비 · 기준: ${latest?.month || '—'}`}
           color={C.Loyal}
           target={10}
           showBar
@@ -137,24 +142,24 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
         <KpiCard
           label="At_Risk → Dormant 전이율 (최신 월)"
           value={latest?.churnRate != null ? `${latest.churnRate.toFixed(2)}%` : '—'}
-          sub="목표: 전월 대비 15% 감소"
+          sub="캠페인 미대상 자연 전이율 · 목표: 전월 대비 15% 감소"
           color={C.At_Risk}
         />
         <KpiCard
           label="Win-back Rate (Dormant → 활성)"
           value={latest?.winbackRate != null ? `${latest.winbackRate.toFixed(2)}%` : '—'}
-          sub="Dormant → 전체 활성 세그먼트 전이 비율"
+          sub="캠페인 미대상 · Dormant → 전체 활성 세그먼트 자연 복귀 비율"
           color={C.Potential}
         />
       </div>
 
-      {/* 차트 1 — 복귀율 & Win-back Rate */}
+      {/* 차트 1 — Win-back Rate 추이 */}
       <div style={{ background: CARD, borderRadius: 8, padding: '20px', marginBottom: 20 }}>
         <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 600, color: TEXT }}>
-          복귀율 & Win-back Rate 추이
+          Win-back Rate 추이
         </h3>
         <p style={{ margin: '0 0 16px', fontSize: 12, color: MUTED }}>
-          At_Risk → Loyal 복귀율 / Dormant → 활성 Win-back Rate 월별 변화
+          캠페인 미대상 자연 전이율 기준 · 캠페인 집행 후 실측치와 비교 예정
         </p>
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={campaignData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
@@ -184,7 +189,7 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
             <Line
               type="monotone"
               dataKey="returnRate"
-              name="At_Risk→Loyal 복귀율"
+              name="At_Risk→Loyal 자연 복귀율"
               stroke={C.Loyal}
               strokeWidth={2.5}
               dot={{ r: 3, fill: C.Loyal }}
@@ -193,7 +198,7 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
             <Line
               type="monotone"
               dataKey="winbackRate"
-              name="Dormant→활성 Win-back"
+              name="Dormant→활성 자연 Win-back"
               stroke={C.Potential}
               strokeWidth={2}
               dot={{ r: 3, fill: C.Potential }}
@@ -203,23 +208,24 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
         </ResponsiveContainer>
       </div>
 
-      {/* 차트 2 — ROI 시뮬레이션 vs 실측 */}
+      {/* 차트 2 — ROI 시뮬레이션 vs 자연 전이율 */}
       <div style={{ background: CARD, borderRadius: 8, padding: '20px' }}>
         <h3 style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 600, color: TEXT }}>
-          ROI 시뮬레이션 vs 실측 비교
+          ROI 시뮬레이션 vs 자연 전이율 비교
         </h3>
         <p style={{ margin: '0 0 16px', fontSize: 12, color: MUTED }}>
-          At_Risk → Loyal 실측 복귀율 vs 보수/중립/낙관 시나리오 기대치
+          캠페인 미실시 상태의 At_Risk → Loyal 자연 전이율 —
+          수평선까지의 격차가 캠페인 도입 시 기대 개선폭
         </p>
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={campaignData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={campaignData} margin={{ top: 10, right: 120, bottom: 20, left: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#0F172A" />
             <XAxis dataKey="month" tick={ax} tickLine={false} angle={-30} textAnchor="end" height={50} />
             <YAxis
               tick={ax} tickLine={false} axisLine={false}
-              tickFormatter={v => `${v?.toFixed(1)}%`}
-              width={45}
-              domain={[0, 'auto']}
+              tickFormatter={v => `${v?.toFixed(0)}%`}
+              width={40}
+              domain={[0, 14]}
             />
             <Tooltip
               content={({ active, payload, label }) => {
@@ -247,18 +253,18 @@ export default function Tab6_CampaignKPI({ transData, loading, error }) {
                 strokeDasharray="5 3"
                 label={{
                   value: s.label,
-                  position: 'insideTopRight',
+                  position: 'insideRight',
                   fill: s.color,
-                  fontSize: 10,
+                  fontSize: 11,
                 }}
               />
             ))}
 
-            {/* 실측 복귀율 */}
+            {/* 자연 복귀율 (캠페인 미실시) */}
             <Line
               type="monotone"
               dataKey="returnRate"
-              name="실측 복귀율"
+              name="자연 복귀율"
               stroke={C.Loyal}
               strokeWidth={2.5}
               dot={{ r: 3, fill: C.Loyal }}
