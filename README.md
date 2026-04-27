@@ -141,7 +141,7 @@ python scripts/extract_data.py
 - `public/data/monthly_full_transition.csv`
 - `public/data/weekly_cohort_flow.csv`
 
-추출 로직은 [scripts/extract_data.py](./scripts/extract_data.py)에 있습니다.
+\* `scripts/extract_data.py`는 로컬 DB 접근 정보와 내부 추출 로직이 포함돼 있어 GitHub 업로드 대상에서 제외했습니다.
 
 ## Deployment
 
@@ -168,6 +168,8 @@ rfm-app/
 ├── server.js                    # 참고용 Express API 서버
 └── doc/                         # 스펙, 데이터 정의, 리뷰 문서
 ```
+
+\* `scripts/extract_data.py`는 로컬 DB 접근 정보와 내부 추출 로직이 포함돼 있어 GitHub 업로드 대상에서 제외했습니다.
 
 ## Notes
 
