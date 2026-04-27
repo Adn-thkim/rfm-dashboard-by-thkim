@@ -5,10 +5,8 @@
 
 ## Visit Dashboard
 
-- 운영 대시보드: [Dashboard URL](https://your-dashboard-url.vercel.app)
+- 운영 대시보드: [RFM Dashboard](https://rfm-dashboard-by-thkim-git-main-taeho-kims-projects-bdfdf470.vercel.app)
 - 로컬 확인: `npm install` 후 `npm run dev`
-
-배포 URL이 확정되면 위 링크를 실제 주소로 교체하면 됩니다.
 
 ## Purpose
 
